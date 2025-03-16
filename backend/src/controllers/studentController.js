@@ -1,34 +1,16 @@
 import prisma from "../config/db.js";
 import bcrypt from "bcryptjs";
 
-// export const addStudent = async (req, res) => {
-//     const { name, email, password, phoneNo, qualification, gender } = req.body;
-//     const profileImage = req.file ? req.file.path : null;
 
-//     try {
-//         const hashedPassword = await bcrypt.hash(password, 10);
-
-//         const newStudent = await prisma.student.create({
-//             data: { name, email, password: hashedPassword, phoneNo, qualification, gender, profileImage },
-//         });
-
-//         res.json({ message: "Student added", student: newStudent });
-//     } catch (error) {
-//         res.status(500).json({ error: "Server error" });
-//     }
-// };
 export const addStudent = async (req, res) => {
     const { name, email, password, phoneNo, qualification, gender } = req.body;
     const profileImage = req.file ? `/uploads/${req.file.filename}` : null;
 
     try {
-        // ✅ Hash password before saving
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // ✅ Convert qualification to array (if sent as a JSON string)
         const qualifications = typeof qualification === "string" ? JSON.parse(qualification) : qualification;
 
-        // ✅ Ensure Prisma instance is working
         const newStudent = await prisma.student.create({
             data: {
                 name,
@@ -68,24 +50,6 @@ export const getStudentById = async (req, res) => {
     }
 };
 
-// export const updateStudent = async (req, res) => {
-//     const { name, email, password, phoneNo, qualification, gender } = req.body;
-//     const profileImage = req.file ? req.file.path : null;
-
-//     try {
-//         const hashedPassword = password ? await bcrypt.hash(password, 10) : undefined;
-
-//         const updatedStudent = await prisma.student.update({
-//             where: { id: req.params.id },
-//             data: { name, email, password: hashedPassword, phoneNo, qualification, gender, profileImage },
-//         });
-
-//         res.json({ message: "Student updated", student: updatedStudent });
-//     } catch (error) {
-//         res.status(500).json({ error: "Server error" });
-//     }
-// };
-
 
 export const updateStudent = async (req, res) => {
     const { id } = req.params;
@@ -115,13 +79,11 @@ export const updateStudent = async (req, res) => {
             }
         }
 
-        // 🔹 Hash new password if provided
         const hashedPassword = password ? await bcrypt.hash(password, 10) : existingStudent.password;
 
-        // 🔹 Fix qualification parsing issue
         let parsedQualification;
         if (Array.isArray(qualification)) {
-            parsedQualification = qualification; // Already an array
+            parsedQualification = qualification; 
         } else {
             try {
                 parsedQualification = JSON.parse(qualification);
@@ -134,10 +96,8 @@ export const updateStudent = async (req, res) => {
             }
         }
 
-        // 🔹 Ensure qualification is an array (even if empty)
         parsedQualification = parsedQualification || [];
 
-        // 🔹 Update student
         const updatedStudent = await prisma.student.update({
             where: { id },
             data: {
